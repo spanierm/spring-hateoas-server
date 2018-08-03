@@ -3,6 +3,7 @@ package com.example.springhateoasserver;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -23,31 +21,32 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @RestController
 public class EmployeeController {
   private final EmployeeRepository employeeRepository;
+  private final EmployeeResourceAssembler employeeResourceAssembler;
 
-  public EmployeeController(EmployeeRepository employeeRepository) {
+  public EmployeeController(EmployeeRepository employeeRepository, EmployeeResourceAssembler employeeResourceAssembler) {
     this.employeeRepository = employeeRepository;
+    this.employeeResourceAssembler = employeeResourceAssembler;
+  }
+
+  @GetMapping(value = "/", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+  public ResourceSupport root() {
+    ResourceSupport resourceSupport = new ResourceSupport();
+    resourceSupport.add(
+        linkTo(methodOn(EmployeeController.class).root()).withSelfRel(),
+        linkTo(methodOn(EmployeeController.class).findAll()).withRel("employees")
+    );
+    return resourceSupport;
   }
 
   @GetMapping(value = "/employees", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
   public ResponseEntity<Resources<Resource<Employee>>> findAll() {
-    List<Resource<Employee>> employees = StreamSupport.stream(employeeRepository.findAll().spliterator(), false)
-        .map(employee -> new Resource<>(
-            employee,
-            linkTo(methodOn(EmployeeController.class).findOne(employee.getId())).withSelfRel(),
-            linkTo(methodOn(EmployeeController.class).findAll()).withRel("employees"))
-        )
-        .collect(Collectors.toList());
-    return ResponseEntity.ok(new Resources<>(employees, linkTo(methodOn(EmployeeController.class).findAll()).withSelfRel()));
+    return ResponseEntity.ok(employeeResourceAssembler.toResources(employeeRepository.findAll()));
   }
 
   @GetMapping(value = "/employees/{id}", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
   public ResponseEntity<Resource<Employee>> findOne(@PathVariable long id) {
     return employeeRepository.findById(id)
-        .map(employee -> new Resource<>(
-            employee,
-            linkTo(methodOn(EmployeeController.class).findOne(employee.getId())).withSelfRel(),
-            linkTo(methodOn(EmployeeController.class).findAll()).withRel("employees"))
-        )
+        .map(employeeResourceAssembler::toResource)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
@@ -55,10 +54,7 @@ public class EmployeeController {
   @PostMapping(value = "/employees", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
   public ResponseEntity<?> newEmployee(@RequestBody Employee employee) {
     Employee savedEmployee = employeeRepository.save(employee);
-    Resource<Employee> employeeResource = new Resource<>(
-        savedEmployee,
-        linkTo(methodOn(EmployeeController.class).findOne(savedEmployee.getId())).withSelfRel()
-    );
+    Resource<Employee> employeeResource = employeeResourceAssembler.toResource(savedEmployee);
     try {
       return ResponseEntity.created(new URI(employeeResource.getLink(Link.REL_SELF).getHref()))
           .body(employeeResource);
