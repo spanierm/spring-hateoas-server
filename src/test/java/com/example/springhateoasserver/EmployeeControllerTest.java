@@ -43,8 +43,8 @@ public class EmployeeControllerTest {
   public void getShouldFetchHalDocuments() throws Exception {
     given(employeeRepository.findAll()).willReturn(
         Arrays.asList(
-            new Employee(1, "Frodo", "Baggins", "ring bearer"),
-            new Employee(2, "Bilbo", "Baggins", "burglar")
+            new Employee(1L, "Frodo", "Baggins", "ring bearer"),
+            new Employee(2L, "Bilbo", "Baggins", "burglar")
         )
     );
 
@@ -58,7 +58,7 @@ public class EmployeeControllerTest {
 
   @Test
   public void postShouldAddUserAndFetchNewDocument() throws Exception {
-    Employee employee = new Employee(1, "Bilbo", "Baggins", "ring bearer");
+    Employee employee = new Employee(1L, "Bilbo", "Baggins", "ring bearer");
     given(employeeRepository.save(any(Employee.class))).willReturn(employee);
 
     mockMvc.perform(post("/employees")

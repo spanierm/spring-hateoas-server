@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.Identifiable;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,10 +14,10 @@ import javax.persistence.Id;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class Employee {
+public class Employee implements Identifiable<Long> {
   @Id
   @GeneratedValue
-  private long id;
+  private Long id;
   private String firstName;
   private String lastName;
   private String role;
