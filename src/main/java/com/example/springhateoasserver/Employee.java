@@ -9,6 +9,7 @@ import org.springframework.hateoas.Identifiable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -26,5 +27,9 @@ public class Employee implements Identifiable<Long> {
     this.firstName = firstName;
     this.lastName = lastName;
     this.role = role;
+  }
+
+  public Optional<Long> getId() {
+    return Optional.ofNullable(id);
   }
 }

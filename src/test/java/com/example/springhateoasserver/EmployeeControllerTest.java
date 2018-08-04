@@ -66,6 +66,6 @@ public class EmployeeControllerTest {
         .andDo(print())
         .andExpect(status().isCreated())
         .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
-        .andExpect(jsonPath("$._links.self.href", endsWith("/employees/" + employee.getId())));
+        .andExpect(jsonPath("$._links.self.href", endsWith("/employees/" + employee.getId().get())));
   }
 }

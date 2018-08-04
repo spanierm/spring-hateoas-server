@@ -56,7 +56,7 @@ public class EmployeeController {
     Employee savedEmployee = employeeRepository.save(employee);
     Resource<Employee> employeeResource = employeeResourceAssembler.toResource(savedEmployee);
     try {
-      return ResponseEntity.created(new URI(employeeResource.getLink(Link.REL_SELF).getHref()))
+      return ResponseEntity.created(new URI(employeeResource.getRequiredLink(Link.REL_SELF).getHref()))
           .body(employeeResource);
     }
     catch (URISyntaxException e) {
