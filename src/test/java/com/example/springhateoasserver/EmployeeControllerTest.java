@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(EmployeeController.class)
+@Import({EmployeeResourceAssembler.class})
 public class EmployeeControllerTest {
   @Autowired
   private MockMvc mockMvc;
@@ -35,9 +36,6 @@ public class EmployeeControllerTest {
   private ObjectMapper objectMapper;
   @MockBean
   private EmployeeRepository employeeRepository;
-  // needed to have an EmployeeResourceAssembler in the Spring context of this test
-  @SpyBean
-  private EmployeeResourceAssembler employeeResourceAssembler;
 
   @Test
   public void getShouldFetchHalDocuments() throws Exception {
