@@ -5,9 +5,11 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,5 +63,33 @@ public class EmployeeController {
         .map(employeeResourceAssembler::toResource)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
+  }
+
+  @PutMapping("/employees/{id}")
+  public ResponseEntity<?> updateEmployee(@PathVariable long id, @RequestBody Employee employee) {
+    if (employee.getId().isPresent() && employee.getId().get() != id) {
+      return ResponseEntity.badRequest().body(
+          String.format("Id of employee '%d' and id path variable '%d' do not match", employee.getId().get(), id)
+      );
+    }
+    if (!employeeRepository.findById(id).isPresent()) {
+      return ResponseEntity.badRequest().body(
+          String.format("There is no employee with the id '%d'", id)
+      );
+    }
+    Employee savedEmployee = employeeRepository.save(employee);
+    Resource<Employee> employeeResource = employeeResourceAssembler.toResource(savedEmployee);
+    try {
+      return ResponseEntity.noContent().location(new URI(employeeResource.getRequiredLink(Link.REL_SELF).getHref())).build();
+    }
+    catch (URISyntaxException e) {
+      return ResponseEntity.badRequest().body("Unable to update " + employee);
+    }
+  }
+
+  @DeleteMapping("/employees/{id}")
+  public ResponseEntity<?> deleteEmployee(@PathVariable long id) {
+    employeeRepository.deleteById(id);
+    return ResponseEntity.noContent().build();
   }
 }
