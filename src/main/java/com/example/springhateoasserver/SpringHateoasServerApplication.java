@@ -18,7 +18,7 @@ public class SpringHateoasServerApplication {
     return new EvoInflectorRelProvider();
   }
 
-  //  @Bean
+  @Bean
   public CommandLineRunner init(EmployeeRepository employeeRepository) {
     return args -> {
       employeeRepository.save(new Employee("Frodo", "Baggins", "ring bearer"));
