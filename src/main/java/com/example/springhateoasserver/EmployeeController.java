@@ -1,7 +1,6 @@
 package com.example.springhateoasserver;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
@@ -28,7 +27,7 @@ public class EmployeeController {
     this.employeeResourceAssembler = employeeResourceAssembler;
   }
 
-  @GetMapping(value = "/", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+  @GetMapping("/")
   public ResourceSupport root() {
     ResourceSupport resourceSupport = new ResourceSupport();
     resourceSupport.add(
@@ -38,20 +37,12 @@ public class EmployeeController {
     return resourceSupport;
   }
 
-  @GetMapping(value = "/employees", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+  @GetMapping("/employees")
   public ResponseEntity<Resources<Resource<Employee>>> findAll() {
     return ResponseEntity.ok(employeeResourceAssembler.toResources(employeeRepository.findAll()));
   }
 
-  @GetMapping(value = "/employees/{id}", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
-  public ResponseEntity<Resource<Employee>> findOne(@PathVariable long id) {
-    return employeeRepository.findById(id)
-        .map(employeeResourceAssembler::toResource)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
-  }
-
-  @PostMapping(value = "/employees", produces = MediaTypes.HAL_JSON_UTF8_VALUE)
+  @PostMapping("/employees")
   public ResponseEntity<?> newEmployee(@RequestBody Employee employee) {
     Employee savedEmployee = employeeRepository.save(employee);
     Resource<Employee> employeeResource = employeeResourceAssembler.toResource(savedEmployee);
@@ -62,5 +53,13 @@ public class EmployeeController {
     catch (URISyntaxException e) {
       return ResponseEntity.badRequest().body("Unable to create " + employee);
     }
+  }
+
+  @GetMapping("/employees/{id}")
+  public ResponseEntity<Resource<Employee>> findOne(@PathVariable long id) {
+    return employeeRepository.findById(id)
+        .map(employeeResourceAssembler::toResource)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
   }
 }

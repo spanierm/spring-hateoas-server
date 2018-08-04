@@ -28,8 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(EmployeeController.class)
-@Import({EmployeeResourceAssembler.class})
+@Import({EmployeeResourceAssembler.class, HypermediaConfiguration.class})
 public class EmployeeControllerTest {
+  private static final String HAL_FORMS_JSON_UTF8_VALUE = MediaTypes.HAL_FORMS_JSON_VALUE + ";charset=UTF-8";
+
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -49,7 +51,7 @@ public class EmployeeControllerTest {
     mockMvc.perform(get("/employees"))
         .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
+        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, HAL_FORMS_JSON_UTF8_VALUE))
         .andExpect(jsonPath("$._links.self.href", endsWith("/employees")))
         .andExpect(jsonPath("$._embedded.employees[0].id", is(1)));
   }
@@ -65,7 +67,25 @@ public class EmployeeControllerTest {
     )
         .andDo(print())
         .andExpect(status().isCreated())
-        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
+        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, HAL_FORMS_JSON_UTF8_VALUE))
         .andExpect(jsonPath("$._links.self.href", endsWith("/employees/" + employee.getId().get())));
+  }
+
+  @Test
+  public void getShouldFetchHalFormDocuments() throws Exception {
+    mockMvc.perform(get("/employees").accept(MediaTypes.HAL_FORMS_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, HAL_FORMS_JSON_UTF8_VALUE))
+        .andExpect(jsonPath("$._links.self.href", endsWith("/employees")))
+        .andExpect(jsonPath("$._templates.default.method", is("post")))
+        .andExpect(jsonPath("$._templates.default.properties[0].name", is("firstName")))
+        .andExpect(jsonPath("$._templates.default.properties[0].required", is(true)))
+        .andExpect(jsonPath("$._templates.default.properties[1].name", is("id")))
+        .andExpect(jsonPath("$._templates.default.properties[1].required", is(true)))
+        .andExpect(jsonPath("$._templates.default.properties[2].name", is("lastName")))
+        .andExpect(jsonPath("$._templates.default.properties[2].required", is(true)))
+        .andExpect(jsonPath("$._templates.default.properties[3].name", is("role")))
+        .andExpect(jsonPath("$._templates.default.properties[3].required", is(true)));
   }
 }
