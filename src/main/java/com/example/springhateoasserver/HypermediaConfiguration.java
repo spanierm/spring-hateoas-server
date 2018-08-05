@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-@Configuration
+// Disable this configuration to use default HAL instead of HAL_FORMS
+//@Configuration
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL_FORMS)
 public class HypermediaConfiguration {
   @Bean
